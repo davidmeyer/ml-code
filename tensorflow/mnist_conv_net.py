@@ -73,18 +73,36 @@ def max_pool(img, k):
 #
 def conv_net(_X, _weights, _biases, _dropout):
 #
-#       make sure: reshape image
 #
     _X = tf.reshape(_X, shape=[-1, 28, 28, 1])
 #
 #       1st convolution layer
 #
-#
 #       alternate with max pooling, then apply dropout
 #
-
+#       The convolution has sride 1 and zero-padding so that the
+#       28x28x1 input image is padded  32x32x1 (so the input
+#       is the same size as the output)
+#
+#       So....apply 5x5x32 convolution (wc1) to get 28x28x32
+#
+#       'wc1': tf.Variable(tf.random_normal([5, 5, 1, 32]))
+#
+#       --> convolutional will compute 32 features for each 5x5 patch.
+#       Its weight tensor will have a shape of [5, 5, 1, 32]. The first
+#       two dimensions are the patch size, the next is the number of
+#       input channels, and the last is the number of output channels.
+#       We also have a bias vector (bc1) with a component for each
+#       output channel.
+#
     conv1 = conv2d(_X, _weights['wc1'], _biases['bc1'])
+#
+#       apply max-pooling down-sample to 14x14x32
+#
     conv1 = max_pool(conv1, k=2)
+#
+#       apply dropout
+#
     conv1 = tf.nn.dropout(conv1, _dropout)
 #
 #       conv1 is now a complete convolutional/max pooling
@@ -92,6 +110,10 @@ def conv_net(_X, _weights, _biases, _dropout):
 #
 #       Do the same for the 2nd convolution layer
 #
+#       zero-padding the 14x14x32 to 18x18x32
+#       apply 5x5x32x64 convolution to get 14x14x64
+#       max-pooling down to 7x7x64
+
     conv2 = conv2d(conv1, _weights['wc2'], _biases['bc2'])
     conv2 = max_pool(conv2, k=2)
     conv2 = tf.nn.dropout(conv2, _dropout)
