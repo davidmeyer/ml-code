@@ -28,7 +28,7 @@ import math
 #
 #	global parameters
 #
-DEBUG               = 1
+DEBUG               = 2
 learning_rate       = 0.01
 train_batch_size    = 64
 test_batch_size     = 256
@@ -38,14 +38,14 @@ training_batch_size = 2
 #
 #	MNIST parameters
 #
-img_size      = 28			# images are 28x28
-img_size_flat = img_size * img_size	# flattened size
-img_shape     = (img_size, img_size)	# shape
-num_channels  = 1			# number of colour channels for the images: 1 channel for gray-scale.
+img_size      = 28			# images are stored in one-dimensional arrays of this length.
+img_size_flat = img_size * img_size	# tuple with height and width of images used to reshape arrays.
+img_shape     = (img_size, img_size)	# number of colour channels for the images: 1 channel for gray-scale.
+num_channels  = 1			# number of classes, one class for each of 10 digits.
 # 
 #	Network Parameters
 #
-n_input          = img_size_flat	# MNIST data input (img shape: (28,28))
+n_input          = img_size_flat	# MNIST data input (img shape: 28*28)
 n_hidden         = int(n_input/3)	# rule of thumb, but...
 num_classes      = 10                   # not really used, as we're trying to reconstruct the image input
 #
@@ -86,7 +86,6 @@ biases = {
     'decoder': tf.Variable(tf.random_normal([n_input])),
 }
 #
-
 #	encoder/decoder
 #	
 #
@@ -144,19 +143,20 @@ session.run(init)
 #
 def plot_images(images, cls_true, cls_pred=None):
     assert len(images) == len(cls_true) == 9
-    fig, axes = plt.subplots(3, 3)                      # create figure with 3x3 sub-plots
+    fig, axes = plt.subplots(3, 3)
     fig.subplots_adjust(hspace=0.3, wspace=0.3)
     for i, ax in enumerate(axes.flat):
-        axes.imshow(images[i].reshape(img_shape), cmap='binary')
-        if cls_pred is None:                            # not predicting class, but...
-            xlabel = "Label: {0}".format(cls_true[i])
+        ax.imshow(images[i].reshape(img_shape), cmap='binary')
+        if cls_pred is None:
+            xlabel = "True: {0}".format(cls_true[i])
         else:
-            xlabel = "Label: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
-        axes.set_xlabel(xlabel)                         # show the classes as the label on the x-axis
-        axes.set_xticks([])                             # remove ticks from the plot
-        axes.set_yticks([])
-        plt.show()                                      # finally, ensure the plot is shown correctly with multiple plots
-                                                        # in a single Notebook cell
+            xlabel = "True: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
+        ax.set_xlabel(xlabel)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    plt.show()   
+
+
 #
 #       break up into batches and run the optimizer
 #
