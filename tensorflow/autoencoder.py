@@ -173,8 +173,6 @@ def optimize(training_epochs,training_batch_size):
         print('\nOptimization Finished...(training_epochs: {:d},training_batch_size: {:d}, elapsed time: {:s})'
               .format(training_epochs,training_batch_size,str(timedelta(seconds=int(round(time_dif))))))
 
-
-
 #
 #
 #       display_reconstruction
@@ -200,9 +198,6 @@ def display_reconstruction(examples_to_show,fontsize):
         plt.waitforbuttonpress()                        # friendly for notebooks
 
 #
-#
-#
-#
 #	Check out the data set (if DEBUG)
 #
 if (DEBUG):
@@ -211,8 +206,8 @@ if (DEBUG):
         print("- Test-set:\t\t{}".format(len(data.test.labels)))
         print("- Validation-set:\t{}\n".format(len(data.validation.labels)))
 #
-#
 #	visualize a few images with ground truth labels
+#
         if (DEBUG > 1): 
                 plot_images(images=images, cls_true=cls_true)
 
