@@ -45,7 +45,7 @@ num_channels  = 1			# number of colour channels for the images: 1 channel for gr
 # 
 #	Network Parameters
 #
-n_input          = img_size_flat	# MNIST data input (img shape: 28*28)
+n_input          = img_size_flat	# MNIST data input (img shape: (28,28))
 n_hidden         = int(n_input/3)	# rule of thumb, but...
 num_classes      = 10                   # not really used, as we're trying to reconstruct the image input
 #
@@ -86,6 +86,7 @@ biases = {
     'decoder': tf.Variable(tf.random_normal([n_input])),
 }
 #
+
 #	encoder/decoder
 #	
 #
