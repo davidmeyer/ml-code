@@ -38,10 +38,10 @@ training_batch_size = 2
 #
 #	MNIST parameters
 #
-img_size      = 28			# images are stored in one-dimensional arrays of this length.
-img_size_flat = img_size * img_size	# tuple with height and width of images used to reshape arrays.
-img_shape     = (img_size, img_size)	# number of colour channels for the images: 1 channel for gray-scale.
-num_channels  = 1			# number of classes, one class for each of 10 digits.
+img_size      = 28			# images are 28x28
+img_size_flat = img_size * img_size	# flattened size
+img_shape     = (img_size, img_size)	# shape
+num_channels  = 1			# number of colour channels for the images: 1 channel for gray-scale.
 # 
 #	Network Parameters
 #
