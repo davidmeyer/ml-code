@@ -31,11 +31,8 @@ import math
 DEBUG               = 1                         # more debug
 USE_REGULARIZER     = 1                         # use regularization?
 learning_rate       = 0.01
-train_batch_size    = 64
 test_batch_size     = 256
 display_step        = 1
-training_epochs     = 5
-training_batch_size = 2
 #
 #	MNIST parameters
 #
@@ -47,7 +44,11 @@ num_channels        = 1         		# 1 is greyscale
 #	Network Parameters
 #
 n_input             = img_size_flat             # input size (img shape: 28*28)
-n_hidden            = int(n_input/3)            # hideen layer size (rule of thumb, but...)
+#
+#       rule of thumb: n_hidden = n_input/3
+#
+#n_hidden            = int(n_input/3) 
+n_hidden            = 100                       # testing
 num_classes         = 10                        # not used
 #
 #
@@ -206,7 +207,7 @@ def optimize(training_epochs,training_batch_size):
         start_time = time.time()
         for epoch in range(training_epochs):
             for i in range(training_batch_size):   # Loop over all batches
-                batch_xs, _ = data.train.next_batch(train_batch_size)
+                batch_xs, _ = data.train.next_batch(training_batch_size)
                 _, c = session.run([optimizer, error], feed_dict={X: batch_xs})
             if epoch % display_step == 0:
                 print("Epoch:", '%04d' % (epoch+1), "error =", "{:.9f}".format(c))
@@ -262,13 +263,13 @@ if (DEBUG):
 #       training_epochs     = 1
 #       training_batch_size = 1
 #
-training_epochs     = 10
-training_batch_size = 20                        # minibatch size (essentially random to start)
+#
+training_epochs = 10                            # arbitary
 #
 #
 #       doesn't quite display right, but ...
 #
-for batch_size in [1, 9, 90, 900]:           # 1+9 = 10, 10+90 = 100, ...= 1000
+for batch_size in [1, 9, 90, 900]:              # 1+9 = 10, 10+90 = 100, ...= 1000
         optimize(training_epochs=training_epochs,training_batch_size=batch_size)
         display_reconstruction(examples_to_show=10,fontsize=18)
 
