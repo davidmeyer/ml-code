@@ -38,16 +38,16 @@ training_batch_size = 2
 #
 #	MNIST parameters
 #
-img_size      = 28			# images 28 x 28
-img_size_flat = img_size * img_size	# flattened
-img_shape     = (img_size, img_size)	# shape
-num_channels  = 1			# 1 is greyscale
+img_size            = 28			# images 28 x 28
+img_size_flat       = img_size * img_size	# flattened
+img_shape           = (img_size, img_size)	# shape
+num_channels        = 1         		# 1 is greyscale
 # 
 #	Network Parameters
 #
-n_input          = img_size_flat	# MNIST data input (img shape: 28*28)
-n_hidden         = int(n_input/3)	# rule of thumb, but...
-num_classes      = 10                   # not really used, as we're trying to reconstruct the image input
+n_input             = img_size_flat	# MNIST data input (img shape: 28*28)
+n_hidden            = int(n_input/3)	# rule of thumb, but...
+num_classes         = 10                # not really used, as we're trying to reconstruct the image input
 #
 #
 #
@@ -88,6 +88,9 @@ biases = {
 #
 #	encoder/decoder
 #	
+#       try tf.nn.sigmoid, tf.nn.relu, etc for nonlinearity
+#       nonlinearity=False means transfer function (aka activation funtion)
+#       g(x) = x
 #
 def encoder(x, nonlinearity=False):
     code = tf.add(tf.matmul(x, weights['encoder']), biases['encoder'])
@@ -106,24 +109,63 @@ def decoder(code, nonlinearity=False):
 #
 #       relu seems less efficient here
 #
+#
+#       first encode
+#
 encoder_op = encoder(X,tf.nn.sigmoid)
+#
+#       then decode
+#
 decoder_op = decoder(encoder_op,tf.nn.sigmoid)
 #
 #	decoder_op is our predicted value (y_pred)
 #
 y_pred = decoder_op
 #
-#	y_true is the imput X 
+#	y_true is the input X 
 #
 y_true = X
 #
 #	cost is just MSE (add regularzers next)
 #
-cost = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+reg_constant = 0.01 
+#
+#
+#       with regularization
+#
+#       cost = tf.add(tf.reduce_mean(tf.pow(y_true - y_pred, 2)),
+#                     tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
+#
+# Epoch: 0001 cost = 0.455753744
+# Optimization Finished...(training_epochs: 1,training_batch_size: 1, elapsed time: 0:00:00)
+# Epoch: 0001 cost = 0.189976141
+# Optimization Finished...(training_epochs: 1,training_batch_size: 9, elapsed time: 0:00:00)
+# Epoch: 0001 cost = 0.071388490
+# Optimization Finished...(training_epochs: 1,training_batch_size: 90, elapsed time: 0:00:02)
+# Epoch: 0001 cost = 0.028894797
+# Optimization Finished...(training_epochs: 1,training_batch_size: 900, elapsed time: 0:00:30)
+#       w/o regularization
+#
+#       cost = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+#
+# Epoch: 0001 cost = 0.431725562
+# Optimization Finished...(training_epochs: 1,training_batch_size: 1, elapsed time: 0:00:00)
+# Epoch: 0001 cost = 0.190942019
+# Optimization Finished...(training_epochs: 1,training_batch_size: 9, elapsed time: 0:00:00)
+# Epoch: 0001 cost = 0.072323456
+# Optimization Finished...(training_epochs: 1,training_batch_size: 90, elapsed time: 0:00:02)
+# Epoch: 0001 cost = 0.034361549
+# Optimization Finished...(training_epochs: 1,training_batch_size: 900, elapsed time: 0:00:30)
+#
+#
+cost = tf.add(tf.reduce_mean(tf.pow(y_true - y_pred, 2)),
+              tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
 #
 #	use the Adam optimizer
 #
 optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
+#
 #
 #       might try others...
 #
@@ -152,25 +194,23 @@ def plot_images(images, cls_true, cls_pred=None):
         else:
             xlabel = "True: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
         ax.set_xlabel(xlabel)
-        ax.set_xticks([])
+        ax.set_xticks([])               # get rid of ticks
         ax.set_yticks([])
     plt.show()   
-
-
 #
 #       break up into batches and run the optimizer
 #
 def optimize(training_epochs,training_batch_size):
         start_time = time.time()
         for epoch in range(training_epochs):
-            for i in range(training_batch_size):                                        # Loop over all batches
+            for i in range(training_batch_size):   # Loop over all batches
                 batch_xs, _ = data.train.next_batch(train_batch_size)
                 _, c = session.run([optimizer, cost], feed_dict={X: batch_xs})
             if epoch % display_step == 0:
                 print("Epoch:", '%04d' % (epoch+1), "cost =", "{:.9f}".format(c))
         end_time = time.time()
         time_dif = end_time - start_time
-        print('\nOptimization Finished...(training_epochs: {:d},training_batch_size: {:d}, elapsed time: {:s})'
+        print('Optimization Finished...training_epochs: {:d},training_batch_size: {:d}, elapsed time: {:s}'
               .format(training_epochs,training_batch_size,str(timedelta(seconds=int(round(time_dif))))))
 
 #
@@ -181,11 +221,12 @@ def optimize(training_epochs,training_batch_size):
 #
 #       Compare original images with their test set reconstructions
 #
+#
 def display_reconstruction(examples_to_show,fontsize):
         reconstruction = session.run(y_pred, feed_dict={X: data.test.images[:examples_to_show]})
         fig, axes = plt.subplots(2, 10, figsize=(10, 3))
         axes[0][0].set_title('MNIST', fontsize=fontsize)
-        axes[1][0].set_title('Reconstruction', fontsize=fontsize)
+        axes[1][0].set_title('Reconstruction',fontsize=fontsize)
         for i in range(examples_to_show):
                 axes[0][i].set_xticks([])                   # has to be a better way to do this
                 axes[0][i].set_yticks([])                   # ...
@@ -195,7 +236,7 @@ def display_reconstruction(examples_to_show,fontsize):
                 axes[1][i].imshow(np.reshape(reconstruction[i], (28, 28)))
         fig.show()
         plt.draw()
-        plt.waitforbuttonpress()                        # friendly for notebooks
+#        plt.waitforbuttonpress()                        # friendly for notebooks
 
 #
 #	Check out the data set (if DEBUG)
@@ -222,6 +263,13 @@ if (DEBUG):
 training_epochs     = 1
 training_batch_size = 20                               # minibatch size (essentially random to start)
 #
-optimize(training_epochs=training_epochs,training_batch_size=training_batch_size)
-display_reconstruction(examples_to_show=10, fontsize=18)
+#
+#       doesn't quite display right, but ...
+#
+for batch_size in [1, 9, 90, 900]:           # 1+9 = 10, 10+90 = 100, ...= 1000
+        optimize(training_epochs=training_epochs,training_batch_size=batch_size)
+        display_reconstruction(examples_to_show=10,fontsize=18)
+
+# optimize(training_epochs=training_epochs,training_batch_size=training_batch_size)
+# display_reconstruction(examples_to_show=10, fontsize=18)
 
