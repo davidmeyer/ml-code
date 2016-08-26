@@ -264,7 +264,7 @@ if (DEBUG):
 #       training_batch_size = 1
 #
 #
-training_epochs = 10                            # arbitary
+training_epochs = 10                            # arbitrary
 #
 #
 #       doesn't quite display right, but ...
