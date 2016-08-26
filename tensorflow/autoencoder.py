@@ -28,7 +28,8 @@ import math
 #
 #	global parameters
 #
-DEBUG               = 1
+DEBUG               = 1                         # more debug
+USE_REGULARIZER     = 1                         # use regularization?
 learning_rate       = 0.01
 train_batch_size    = 64
 test_batch_size     = 256
@@ -45,17 +46,15 @@ num_channels        = 1         		# 1 is greyscale
 # 
 #	Network Parameters
 #
-n_input             = img_size_flat	# MNIST data input (img shape: 28*28)
-n_hidden            = int(n_input/3)	# rule of thumb, but...
-num_classes         = 10                # not really used, as we're trying to reconstruct the image input
-#
+n_input             = img_size_flat             # input size (img shape: 28*28)
+n_hidden            = int(n_input/3)            # hideen layer size (rule of thumb, but...)
+num_classes         = 10                        # not used
 #
 #
 #	get MNIST data set and place holder for feed_dict
 #
 data  = input_data.read_data_sets("/tmp/data/", one_hot=True)
 X     = tf.placeholder("float", [None, n_input])
-#
 #
 #	one-hot encoded class labels [0-9, one hot encoded]
 #
@@ -66,10 +65,10 @@ data.test.cls = np.argmax(data.test.labels, axis=1)
 images = data.test.images[0:9]
 #
 #	Get the true classes for those images (again, autoencoder, not
-#       really using these)
+#       really using these, execpt for checking that we loaded MNIST
+#       correctly (see plot_images below)
 #
 cls_true = data.test.cls[0:9]
-#
 #
 #	weights and biases
 #
@@ -125,11 +124,7 @@ y_pred = decoder_op
 #	y_true is the input X 
 #
 y_true = X
-#
-#	cost is just MSE (add regularzers next)
-#
-reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-reg_constant = 0.01 
+
 #
 #
 #       with regularization
@@ -159,17 +154,24 @@ reg_constant = 0.01
 # Optimization Finished...(training_epochs: 1,training_batch_size: 900, elapsed time: 0:00:30)
 #
 #
-cost = tf.add(tf.reduce_mean(tf.pow(y_true - y_pred, 2)),
-              tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
+#
+reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+reg_constant = 0.01 
+#
+if (USE_REGULARIZER):
+        error = tf.add(tf.reduce_mean(tf.square(tf.sub(y_true,y_pred))),
+                      tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
+else:
+        error = tf.reduce_mean(tf.square(y_true - y_pred))
+
 #
 #	use the Adam optimizer
 #
-optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate).minimize(error)
 #
+#       might try others, e.g., 
 #
-#       might try others...
-#
-#       optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(cost)
+#       optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(error)
 #
 #
 #	Get tensorlfow going
@@ -190,9 +192,9 @@ def plot_images(images, cls_true, cls_pred=None):
     for i, ax in enumerate(axes.flat):
         ax.imshow(images[i].reshape(img_shape), cmap='binary')
         if cls_pred is None:
-            xlabel = "True: {0}".format(cls_true[i])
+            xlabel = "Label: {0}".format(cls_true[i])
         else:
-            xlabel = "True: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
+            xlabel = "Label: {0}, Pred: {1}".format(cls_true[i], cls_pred[i])
         ax.set_xlabel(xlabel)
         ax.set_xticks([])               # get rid of ticks
         ax.set_yticks([])
@@ -205,9 +207,9 @@ def optimize(training_epochs,training_batch_size):
         for epoch in range(training_epochs):
             for i in range(training_batch_size):   # Loop over all batches
                 batch_xs, _ = data.train.next_batch(train_batch_size)
-                _, c = session.run([optimizer, cost], feed_dict={X: batch_xs})
+                _, c = session.run([optimizer, error], feed_dict={X: batch_xs})
             if epoch % display_step == 0:
-                print("Epoch:", '%04d' % (epoch+1), "cost =", "{:.9f}".format(c))
+                print("Epoch:", '%04d' % (epoch+1), "error =", "{:.9f}".format(c))
         end_time = time.time()
         time_dif = end_time - start_time
         print('Optimization Finished...training_epochs: {:d},training_batch_size: {:d}, elapsed time: {:s}'
@@ -260,8 +262,8 @@ if (DEBUG):
 #       training_epochs     = 1
 #       training_batch_size = 1
 #
-training_epochs     = 1
-training_batch_size = 20                               # minibatch size (essentially random to start)
+training_epochs     = 10
+training_batch_size = 20                        # minibatch size (essentially random to start)
 #
 #
 #       doesn't quite display right, but ...
