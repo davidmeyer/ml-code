@@ -158,7 +158,6 @@ reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 reg_constant = 0.01 
 #
 #
-#
 if (USE_REGULARIZER):
         error = tf.add(tf.reduce_mean(tf.square(tf.sub(y_true,y_pred))),
                        tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
@@ -229,17 +228,23 @@ def display_reconstruction(examples_to_show,fontsize):
         reconstruction = session.run(y_pred,
                                      feed_dict={X: data.test.images[:examples_to_show]})
         fig, ax = plt.subplots(2,10,figsize=(10,3))
-        ax[0][0].set_title('MNIST', fontsize=fontsize)
-        ax[1][0].set_title('Reconstruction',fontsize=fontsize)
+        aboutmiddle = int((examples_to_show/2) - 1)                     # sort of
+        ax[0][aboutmiddle].set_title('MNIST',                           # move over then center
+                           horizontalalignment='center',
+                           fontsize=fontsize)  
+        ax[1][aboutmiddle].set_title('Reconstruction',                  # move over then center
+                           horizontalalignment='center',
+                           fontsize=fontsize)
         for i in range(examples_to_show):
-            ax[0][i].set_xticks([])                   # has to be a better way
-            ax[0][i].set_yticks([])                   # ...
-            ax[1][i].set_xticks([])                   # ...
-            ax[1][i].set_yticks([])                   # still removing ticks
+            ax[0][i].set_xticks([])                                     # has to be a better way
+            ax[0][i].set_yticks([])                                     # ...
+            ax[1][i].set_xticks([])                                     # ...
+            ax[1][i].set_yticks([])                                     # still removing ticks
             ax[0][i].imshow(np.reshape(data.test.images[i],(28, 28)))
             ax[1][i].imshow(np.reshape(reconstruction[i],  (28, 28)))
         fig.show()
         plt.draw()
+
 #       plt.waitforbuttonpress()                      # friendly for notebooks
 #
 #
@@ -270,7 +275,7 @@ training_epochs = 10                            # arbitrary
 #
 #       doesn't quite display right, but ...
 #
-for batch_size in [1, 9, 90, 900]:              # 1+9 = 10, 10+90 = 100, ...= 1000
+for batch_size in [1, 9, 90, 1000]:              # 1+9 = 10, 10+90 = 100, ...= 1000
         optimize(training_epochs=training_epochs,training_batch_size=batch_size)
         display_reconstruction(examples_to_show=10,fontsize=18)
 #
