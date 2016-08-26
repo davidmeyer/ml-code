@@ -6,7 +6,8 @@
 #               training_epochs
 #               training_batch_size
 #
-#       gives insight into how training proceess (training_batch_size around one not surprisingly yields random noise, ...)
+#       gives insight into how training proceess (training_batch_size
+#       around 1 not surprisingly yields random noise, ...)
 #
 #
 #	David Meyer
@@ -29,7 +30,7 @@ import math
 #	global parameters
 #
 DEBUG               = 1                         # more debug
-USE_REGULARIZER     = 1                         # use regularization?
+USE_REGULARIZER     = 0                         # use regularization?
 learning_rate       = 0.01
 test_batch_size     = 256
 display_step        = 1
@@ -103,7 +104,6 @@ def decoder(code, nonlinearity=False):
     if nonlinearity:
         reconstruction = nonlinearity(reconstruction)
     return reconstruction
-
 #
 #	get the encoding and decoding operations
 #
@@ -125,7 +125,6 @@ y_pred = decoder_op
 #	y_true is the input X 
 #
 y_true = X
-
 #
 #
 #       with regularization
@@ -155,15 +154,16 @@ y_true = X
 # Optimization Finished...(training_epochs: 1,training_batch_size: 900, elapsed time: 0:00:30)
 #
 #
-#
 reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 reg_constant = 0.01 
 #
+#
+#
 if (USE_REGULARIZER):
         error = tf.add(tf.reduce_mean(tf.square(tf.sub(y_true,y_pred))),
-                      tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
+                       tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
 else:
-        error = tf.reduce_mean(tf.square(y_true - y_pred))
+        error = tf.reduce_mean(tf.square(tf.sub(y_true,y_pred)))
 
 #
 #	use the Adam optimizer
@@ -188,9 +188,9 @@ session.run(init)
 #
 def plot_images(images, cls_true, cls_pred=None):
     assert len(images) == len(cls_true) == 9
-    fig, axes = plt.subplots(3, 3)
+    fig, ax = plt.subplots(3, 3)
     fig.subplots_adjust(hspace=0.3, wspace=0.3)
-    for i, ax in enumerate(axes.flat):
+    for i, ax in enumerate(ax.flat):
         ax.imshow(images[i].reshape(img_shape), cmap='binary')
         if cls_pred is None:
             xlabel = "Label: {0}".format(cls_true[i])
@@ -226,21 +226,22 @@ def optimize(training_epochs,training_batch_size):
 #
 #
 def display_reconstruction(examples_to_show,fontsize):
-        reconstruction = session.run(y_pred, feed_dict={X: data.test.images[:examples_to_show]})
-        fig, axes = plt.subplots(2, 10, figsize=(10, 3))
-        axes[0][0].set_title('MNIST', fontsize=fontsize)
-        axes[1][0].set_title('Reconstruction',fontsize=fontsize)
+        reconstruction = session.run(y_pred,
+                                     feed_dict={X: data.test.images[:examples_to_show]})
+        fig, ax = plt.subplots(2,10,figsize=(10,3))
+        ax[0][0].set_title('MNIST', fontsize=fontsize)
+        ax[1][0].set_title('Reconstruction',fontsize=fontsize)
         for i in range(examples_to_show):
-                axes[0][i].set_xticks([])                   # has to be a better way to do this
-                axes[0][i].set_yticks([])                   # ...
-                axes[1][i].set_xticks([])                   # ...
-                axes[1][i].set_yticks([])                   # still removing ticks
-                axes[0][i].imshow(np.reshape(data.test.images[i], (28, 28)))
-                axes[1][i].imshow(np.reshape(reconstruction[i], (28, 28)))
+            ax[0][i].set_xticks([])                   # has to be a better way
+            ax[0][i].set_yticks([])                   # ...
+            ax[1][i].set_xticks([])                   # ...
+            ax[1][i].set_yticks([])                   # still removing ticks
+            ax[0][i].imshow(np.reshape(data.test.images[i],(28, 28)))
+            ax[1][i].imshow(np.reshape(reconstruction[i],  (28, 28)))
         fig.show()
         plt.draw()
-#        plt.waitforbuttonpress()                        # friendly for notebooks
-
+#       plt.waitforbuttonpress()                      # friendly for notebooks
+#
 #
 #	Check out the data set (if DEBUG)
 #
@@ -272,7 +273,7 @@ training_epochs = 10                            # arbitrary
 for batch_size in [1, 9, 90, 900]:              # 1+9 = 10, 10+90 = 100, ...= 1000
         optimize(training_epochs=training_epochs,training_batch_size=batch_size)
         display_reconstruction(examples_to_show=10,fontsize=18)
-
+#
 # optimize(training_epochs=training_epochs,training_batch_size=training_batch_size)
 # display_reconstruction(examples_to_show=10, fontsize=18)
 
