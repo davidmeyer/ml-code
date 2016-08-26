@@ -30,7 +30,7 @@ import math
 #	global parameters
 #
 DEBUG               = 1                         # more debug
-USE_REGULARIZER     = 0                         # use regularization?
+USE_REGULARIZER     = 1                         # use regularization?
 learning_rate       = 0.01
 test_batch_size     = 256
 display_step        = 1
