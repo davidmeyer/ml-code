@@ -228,6 +228,7 @@ def display_reconstruction(examples_to_show,fontsize):
         reconstruction = session.run(y_pred,
                                      feed_dict={X: data.test.images[:examples_to_show]})
         fig, ax = plt.subplots(2,10,figsize=(10,3))
+        plt.style.use('grayscale')                                      # MNIST is depth 1
         aboutmiddle = int((examples_to_show/2) - 1)                     # sort of
         ax[0][aboutmiddle].set_title('MNIST',                           # move over then center
                            horizontalalignment='center',
