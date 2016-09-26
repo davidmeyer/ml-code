@@ -74,7 +74,7 @@ cls_true = data.test.cls[0:9]
 #
 #	weights and biases
 #
-#       Note: one hidden layer. Thi sapproach is cool as it is easily
+#       Note: one hidden layer. This sapproach is cool as it is easily
 #       generalized to many hidden layers.
 #
 #
