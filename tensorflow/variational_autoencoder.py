@@ -19,7 +19,7 @@
 #       Get the libraries we need
 #
 from   tensorflow.examples.tutorials.mnist import input_data
-from   sklearn.metrics                     import confusion_matrix
+from   sklearn.metrics                     import mean_squared_error
 from   datetime                            import timedelta
 import tensorflow                          as     tf
 import numpy                               as     np
@@ -337,6 +337,12 @@ if (DEBUG):
         print "Reconstructing..."
 x_reconstruct = vae.reconstruct(x_sample)
 #
+#       see algorithm 4 of http://dm.snu.ac.kr/static/docs/TR/SNUDM-TR-2015-03.pdf
+#
+reconstruction_error = mean_squared_error(x_sample, x_reconstruct)
+print "reconstruction error = {}".format(reconstruction_error)
+
+#
 #       take a look at what we reconstructed
 #
 plt.figure(figsize=(8, 12))
@@ -351,5 +357,4 @@ for i in range(5):
     plt.colorbar()
 plt.tight_layout()
 plt.show()
-
 
