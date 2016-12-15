@@ -154,11 +154,10 @@ y_true = X
 # Optimization Finished...(training_epochs: 1,training_batch_size: 900, elapsed time: 0:00:30)
 #
 #
-reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-reg_constant = 0.01 
-#
 #
 if (USE_REGULARIZER):
+        reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+        reg_constant = 0.01 
         error = tf.add(tf.reduce_mean(tf.square(tf.sub(y_true,y_pred))),
                        tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
 else:
