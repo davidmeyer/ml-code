@@ -1,3 +1,4 @@
+
 #
 #       variational_autoencoder.py
 #
@@ -26,14 +27,18 @@ import numpy                               as     np
 import matplotlib.pyplot                   as     plt
 import time
 import math
+import os
+#
+#       turn off some warnings
+#
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 #
 #
 #	global parameters
 #
-DEBUG               = 1
-training_epochs     = 1         # use 1 for debugging
-display_step        = 1
-#
+DEBUG                = 1
+training_epochs      = 1         # use 1 for debugging
+display_step         = 1
 #
 #       initialize random number generators
 #
@@ -96,7 +101,7 @@ class VariationalAutoencoder(object):
 #
 #       set up tensorflow
 #
-        init = tf.initialize_all_variables()    # init variables
+        init = tf.global_variables_initializer()
         self.sess = tf.InteractiveSession()     
         self.sess.run(init)                     # launch the session
 #
@@ -128,7 +133,7 @@ class VariationalAutoencoder(object):
 #       compute z = mu + sigma*epsilon (reparameterization trick)
 #
         self.z = tf.add(self.z_mean, 
-                        tf.mul(tf.sqrt(tf.exp(self.z_log_sigma_sq)), eps))
+                        tf.multiply(tf.sqrt(tf.exp(self.z_log_sigma_sq)), eps))
 #
 #       The generator outputs the mean of the Bernoulli distribution
 #       of the reconstructed input
@@ -200,15 +205,13 @@ class VariationalAutoencoder(object):
 #       in latent space onto a Bernoulli distribution in data space.
 #       Again, transformation is parametrized and can be learned.
 #
-    def _g(self, weights, biases):
-        layer_1 = self.transfer_fct(tf.add(tf.matmul(self.z, weights['h1']), 
-                                           biases['b1'])) 
-        layer_2 = self.transfer_fct(tf.add(tf.matmul(layer_1, weights['h2']), 
-                                           biases['b2'])) 
-        x_reconstr_mean = tf.nn.sigmoid(tf.add(tf.matmul(layer_2,
-                                                         weights['out_mean']),
-                                               biases['out_mean']))
-        return x_reconstr_mean
+
+    def _g(self, weights, biases): 
+        layer_1         = self.transfer_fct(tf.add(tf.matmul(self.z, weights['h1']),biases['b1']))  
+        layer_2         = self.transfer_fct(tf.add(tf.matmul(layer_1, weights['h2']), biases['b2']))  
+        x_reconstr_mean = tf.nn.sigmoid(tf.add(tf.matmul(layer_2, weights['out_mean']), biases['out_mean'])) 
+        return x_reconstr_mean 
+
 #
 #       _elbo
 #

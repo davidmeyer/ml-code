@@ -26,6 +26,11 @@ import numpy                               as     np
 import matplotlib.pyplot                   as     plt
 import time
 import math
+import os
+#
+#       turn off some warnings
+#
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 #
 #	global parameters
 #
@@ -158,10 +163,10 @@ y_true = X
 if (USE_REGULARIZER):
         reg_losses   = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
         reg_constant = 0.01 
-        error = tf.add(tf.reduce_mean(tf.square(tf.sub(y_true,y_pred))),
-                       tf.mul(reg_constant,tf.reduce_sum(reg_losses)))
+        error = tf.add(tf.reduce_mean(tf.square(tf.subtract(y_true,y_pred))),
+                       tf.multiply(reg_constant,tf.reduce_sum(reg_losses)))
 else:
-        error = tf.reduce_mean(tf.square(tf.sub(y_true,y_pred)))
+        error = tf.reduce_mean(tf.square(tf.subtract(y_true,y_pred)))
 
 #
 #	use the Adam optimizer
@@ -175,7 +180,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate).minimize(error)
 #
 #	Get tensorlfow going
 #
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 #
 #	Launch the graph (use InteractiveSession as that is more convenient while using Notebooks)
 #
